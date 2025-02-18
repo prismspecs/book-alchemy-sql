@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Library</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h2>Library</h2>
+
+    <a href="/add_author">Add Author</a> | <a href="/add_book">Add Book</a>
+
+    <h3>Search Books</h3>
+    <form method="GET" action="/">
+        <input type="text" name="search"
+               placeholder="Search by title or author"
+               value="{{ query }}">
+        <button type="submit">Search</button>
+        {% if query %}
+        <a href="/" style="margin-left: 10px;">Clear Search</a>
+        {% endif %}
+    </form>
+
+    <h3>Sort By</h3>
+    <div>
+        <a href="{{ url_for('home', sort_by='title', search=query) }}">Title</a> |
+        <a href="{{ url_for('home', sort_by='author', search=query) }}">Author</a>
+    </div>
+
+    <h3>Books</h3>
+    <label>Sort by:</label>
+    <a href="/?sort_by=title">Title</a> | <a href="/?sort_by=author">Author</a>
+
+    {% if books %}
+        <ul>
+            {% for book in books %}
+                <li style="display: flex; align-items: center; gap: 15px;">
+                    <!-- Book Cover -->
+                    <img src="https://covers.openlibrary.org/b/isbn/{{ book.isbn }}-M.jpg"
+                         alt="Cover of {{ book.title }}"
+                         onerror="this.onerror=null; this.src='{{ url_for('static', filename='placeholder.jpg') }}';"
+                         style="width: 100px; height: auto;">
+
+                    <div>
+                        <strong>{{ book.title }}</strong> by {{ book.author.name }}
+
+                        <span style="margin-left: 20px;">
+                            <form action="{{ url_for('delete_author', author_id=book.author.id) }}"
+                                  method="POST"
+                                  style="display: inline;">
+                                <button type="submit"
+                                        onclick="return confirm('Delete {{ book.author.name }} and ALL their books?')"
+                                        class="danger">
+                                    Delete Author
+                                </button>
+                            </form>
+
+                            <form action="/book/{{ book.id }}/delete" method="POST" style="display: inline;">
+                                <button type="submit"
+                                        onclick="return confirm('Delete {{ book.title }}?')">
+                                    Delete Book
+                                </button>
+                            </form>
+                        </span>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No books found{% if query %} matching "{{ query }}"{% endif %}.</p>
+    {% endif %}
+</body>
+</html>
